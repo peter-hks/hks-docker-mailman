@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/root/.cache \
            postgresql-dev mariadb-dev mariadb-connector-c python3-dev libffi-dev openldap-dev cargo rust \
 	&& apk add --no-cache --virtual .mailman-rundeps bash sassc tzdata libldap \
 	   postgresql-client mysql-client py3-mysqlclient curl mailcap gettext \
-	   python3 py3-pip xapian-core xapian-bindings-python3 libffi pcre-dev py-cryptography \
+	   python3 py3-pip xmlsec xapian-core xapian-bindings-python3 libffi pcre-dev py-cryptography \
 	&& python3 -m pip install --break-system-packages -U 'Django<4.3' pip setuptools wheel \
 	&& pip install --break-system-packages -r /tmp/requirements.txt \
 		whoosh \
@@ -38,6 +38,11 @@ RUN --mount=type=cache,target=/root/.cache \
 COPY mailman-web /opt/mailman-web
 # Add startup script to container
 COPY docker-entrypoint.sh /usr/local/bin/
+COPY ./certs/saml_priv.key /etc/ssl/certs/saml_priv.key
+COPY ./certs/saml_pub.cert /etc/ssl/certs/saml_pub.cert
+
+RUN chmod 644 /etc/ssl/certs/saml_priv.key \
+    && chmod 644 /etc/ssl/certs/saml_pub.cert
 
 RUN chown -R mailman /opt/mailman-web/ \
 	&& chmod u+x /opt/mailman-web/manage.py

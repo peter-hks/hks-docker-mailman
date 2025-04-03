@@ -69,7 +69,9 @@ MAILMAN_ARCHIVER_FROM = (os.environ.get('MAILMAN_HOST_IP', gethostbyname(os.envi
 
 # Application definition
 
-INSTALLED_APPS = []
+INSTALLED_APPS = [
+        'django_saml2_auth',
+        ]
 DEFAULT_APPS = [
     'hyperkitty',
     'postorius',

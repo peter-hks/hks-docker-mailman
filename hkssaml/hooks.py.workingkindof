@@ -1,0 +1,67 @@
+from django.conf import settings
+from mailmanclient import Client
+from mailman.interfaces.usermanager import IUserManager
+from zope.component import getUtility
+from mailman.utilities.datetime import now
+
+def create_user(user_identity):
+    from django.conf import settings
+    import logging
+    logger = logging.getLogger(__name__)
+
+    # Log the user_identity contents for debugging
+    logger.info(f"User identity received: {user_identity}")
+
+    client = Client('http://localhost:8001/3.1', 'restadmin', 'restpass')
+
+    # Retrieve email and username from mapped attributes
+    user_email = user_identity.get('email')
+    user_username = user_identity.get('username')
+
+    # Verify email and username are present
+    if not user_email:
+        logger.error("Email attribute 'email' not found in user_identity")
+        raise ValueError("Email attribute 'email' not found")
+
+    if not user_username:
+        logger.error("Username attribute 'username' not found in user_identity")
+        raise ValueError("Username attribute 'username' not found")
+
+    # Continue with user creation
+    try:
+        user = client.create_user(user_email, None)
+        user.add_address(user_email, absorb_existing=True)
+        address = client.get_address(user_email)
+        address.verify()
+        user.preferred_address = user_email
+        logger.info(f"User {user_username} created successfully with email {user_email}")
+    except Exception as e:
+        logger.error(f"Error creating user: {str(e)}")
+        raise
+
+def before_login(user_identity):
+    from django.conf import settings
+    import logging
+    logger = logging.getLogger(__name__)
+
+    # Log the user_identity contents for debugging
+    logger.info(f"Before login hook called with user_identity: {user_identity}")
+
+    client = Client('http://localhost:8001/3.1', 'restadmin', 'restpass')
+
+    # Retrieve email from mapped attributes
+    user_email = user_identity.get('email')
+
+    if not user_email:
+        logger.error("Email attribute 'email' not found in user_identity")
+        raise ValueError("Email attribute 'email' not found")
+
+    # Verify the user's email address
+    try:
+        address = client.get_address(user_email)
+        if not address.verified:
+            address.verify()
+            logger.info(f"Email address {user_email} verified")
+    except Exception as e:
+        logger.error(f"Error verifying email address: {str(e)}")
+        raise

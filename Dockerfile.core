@@ -1,0 +1,5 @@
+FROM maxking/mailman-core:0.4
+
+# Copy your plugin source code directly into Python’s site-packages
+COPY hkspipelines /usr/lib/python3.11/site-packages/hkspipelines
+

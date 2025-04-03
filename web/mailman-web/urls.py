@@ -16,19 +16,49 @@
 # You should have received a copy of the GNU General Public License along with
 # Postorius.  If not, see <http://www.gnu.org/licenses/>.
 
+# from django.conf.urls import include
+# from django.contrib import admin
+# from django.urls import path,re_path, reverse_lazy
+# from django.views.generic import RedirectView
+# import django_saml2_auth.views
+# 
+# urlpatterns = [
+#     path(r'', RedirectView.as_view(
+#         url=reverse_lazy('list_index'),
+#         permanent=True)),
+#     path(r'postorius/', include('postorius.urls')),
+#     path(r'hyperkitty/', include('hyperkitty.urls')),
+#     path(r'', include('django_mailman3.urls')),
+#     path(r'accounts/', include('allauth.urls')),
+#     # Django admin
+#     path(r'admin/', admin.site.urls),
+# ]
+
 from django.conf.urls import include
 from django.contrib import admin
-from django.urls import path, reverse_lazy
+from django.urls import path, re_path, reverse_lazy
 from django.views.generic import RedirectView
+import django_saml2_auth.views
 
 urlpatterns = [
-    path(r'', RedirectView.as_view(
-        url=reverse_lazy('list_index'),
-        permanent=True)),
-    path(r'postorius/', include('postorius.urls')),
-    path(r'hyperkitty/', include('hyperkitty.urls')),
-    path(r'', include('django_mailman3.urls')),
-    path(r'accounts/', include('allauth.urls')),
+    # Redirect the root URL to 'list_index'
+    path('', RedirectView.as_view(url=reverse_lazy('list_index'), permanent=True)),
+
+    # SAML 2.0 Authentication routes for Single Sign-On (SSO)
+    re_path(r'^sso/', include('django_saml2_auth.urls')),
+    re_path(r'^accounts/login/$', django_saml2_auth.views.signin),
+    re_path(r'^admin/login/$', django_saml2_auth.views.signin),
+
+    # Mailman 3 components
+    path('postorius/', include('postorius.urls')),
+    path('hyperkitty/', include('hyperkitty.urls')),
+    path('mailman3/', include('postorius.urls')),
+    path('archives/', include('hyperkitty.urls')),
+    path('', include('django_mailman3.urls')),
+
+    # Authentication related
+    path('accounts/', include('allauth.urls')),
+
     # Django admin
-    path(r'admin/', admin.site.urls),
+    path('admin/', admin.site.urls),
 ]

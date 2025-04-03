@@ -1,0 +1,5 @@
+FROM maxking/mailman-web:0.4
+
+RUN apk add --no-cache xmlsec
+RUN pip install "grafana-django-saml2-auth"
+COPY hkssaml /usr/lib/python3.11/site-packages/hkssaml
